@@ -2,10 +2,7 @@
 var app = {
   init: function(){
     this.server = 'https://api.parse.com/1/classes/chatterbox';
-    var ctxt = this;
     this.fetch();
-    setInterval(ctxt.fetch, 5000);
- 
   },
   send: function(message){
     $.ajax({
@@ -25,29 +22,38 @@ var app = {
   },
   fetch: function(){
     $.get(this.server, function( data ) {
-      displayMessages(data);
+      processData(data);
+      app.clearRooms();
       displayRooms();
     });
   },
   clearMessages: function() {
     $('#chats').children().remove();
   },
+  clearRooms: function() {
+    $('.rooms').children().remove()
+    $('#roomSelect').children().remove();
+  },
   addMessage: function(message){
-    $('#chats').append('<div class="message"></div>');
-      $('.message').append('<span class="username"></span>');
-      $('.message').append('<span class="text"></span>');
-      $('.username').text(message.username);
-      $('.text').text(message.text)
+    displayMessages(message);
   },
   addRoom: function(roomname){
     $('#roomSelect').append($('<option>', {
       value: roomname,
       text: roomname
     }));
+    $('.rooms').append('<div class="room"></div>');
+    $('.room').last().text(roomname);
   },
   addFriend: function(username){
-    $('.friendsList').append('<div class="friend"></div>');
-    $('.friend').text(username);
+    if (!friends[username]) {
+      $('.friendsList').append('<div class="friend bold"></div>');
+      $('.friend').last().text(username);
+      friends[username] = users[username];
+      app.clearMessages();
+      app.clearRooms();
+      app.fetch();
+    } 
   },
   handleSubmit: function(user, note, room){
     message = {
@@ -55,45 +61,57 @@ var app = {
       text: note,
       roomname: room
     }
-    this.send(message)
+    this.addMessage(message);
+    this.send(message);
   }
 };
 var rooms = {};
-var displayMessages = function(object){
+var friends = {};
+var users = {};
+
+var processData = function(object){
   if (object.results) {
     for(var i=0; i<object.results.length; i++){
-      if (!rooms[object.results[i].roomname]) {
-        rooms[object.results[i].roomname] = [];
-      }
-      rooms[object.results[i].roomname].push({username: object.results[i].username, text: object.results[i].text});
-      $('#chats').append('<div class="message"></div>');
-      $('.message').append('<div class="username"></div>');
-      $('.message').append('<div class="text"></div>');
-      $('.username').last().text(object.results[i].username);
-      $('.text').last().text(object.results[i].text); //+ object.results[i].username + ':' + object.results[i].text + ':' + object.results[i].updatedAt + '</div>')
+      users[object.results[i].username] = users[object.results[i].username] || [];
+      rooms[object.results[i].roomname] = rooms[object.results[i].roomname] || [];
+      var messageObject = {username: object.results[i].username, text: object.results[i].text};
+      rooms[object.results[i].roomname].push(messageObject);
+      users[object.results[i].username].push(messageObject);
+      displayMessages(messageObject);
     }
-    console.log(rooms);
+  }
+}
+
+var displayMessages = function(messageObject) {
+  $('#chats').prepend('<div class="message"></div>');
+  $('.message').first().append('<div class="username"></div>');
+  $('.message').first().append('<div class="text"></div>');
+  $('.username').first().text(messageObject.username);
+  $('.text').first().text(messageObject.text);
+  if (friends[messageObject.username]) {
+    $('.username').first().addClass('bold');
+    $('.text').first().addClass('bold'); 
   }
 }
 
 var displayRooms = function() {
-  $('.rooms').children().remove()
-  $('#roomSelect').children().remove();
   for (var room in rooms) {
     app.addRoom(room);
-    console.log(room);
-      $('.rooms').append('<div class="room"></div>');
-      $('.room').last().text(room);
-
   }
 }
 
 $(document).ready(function() {
   app.init();
  $('#chats').on('click', '.username', function(){
-    console.log($(this).text());
     app.addFriend($(this).text());
   });
+ $('.rooms').on('click', '.room', function() {
+    app.clearMessages();
+    var messArray = rooms[$(this).text()];
+    for (var i = 0; i < messArray.length; i++) {
+      displayMessages(messArray[i]);
+    }
+  })
  $('#send').on('submit', function(e){
     e.preventDefault();
     var roomValue = $('#roomSelect').val();
@@ -106,6 +124,21 @@ $(document).ready(function() {
     $('#name').val("");
     $('#note').val("");
     $('#room').val(""); 
+  });
+  $('button.refresh').on('click', function() {
+    app.clearMessages();
+    app.clearRooms();
+    app.fetch();
+  });
+  $('.createRoom').on('click', function() {
+    $('#room').toggle()
+  });
+  $('.friendsList').on('click', '.friend', function() {
+    app.clearMessages();
+    var friendMess = friends[$(this).text()];
+    for (var i = 0; i < friendMess.length; i++) {
+      displayMessages(friendMess[i]);
+    }
   });
 
 });

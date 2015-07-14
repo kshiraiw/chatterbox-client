@@ -17,7 +17,7 @@ body {
 
 #main h1 {
     margin-top: 0;
-    font-size: 35px;
+    font-size: 45px;
     margin-bottom: 5px;
     padding: 5px;
 }
@@ -81,4 +81,84 @@ form input[type=text] {
 
 .spinner img {
     padding: 10px;
+}
+
+.bold {
+    font-weight: bold;
+}
+
+.friend, .room {
+    display:inline-block;
+    padding: 5px;
+    margin: 5px;
+    border-radius: 5px;
+    background-color: grey;
+    color: white
+}
+.friends {
+    margin: 0;
+}
+.friend {
+    background-color: #FF9966;
+    margin: 0 2px 10px 2px;
+
+}
+.friendsList {
+    padding: 5px;
+    margin: 5px;
+    background-color: #eee;
+    border-radius: 5px
+}
+.refresh {
+    background-color: #CC0066;
+    font-size: 18px;
+    width: 150px;
+    height: 30px;
+    color: white;
+    border-radius: 5px
+}
+
+input {
+    margin: 10px;
+    border-radius: 5px;
+}
+
+#room {
+    display: none;
+}
+
+#send {
+    width: 80%;
+    background-color: #eee;
+    padding: 10%;
+    text-align: center;
+    margin-top: 10px;
+    border-radius: 5px;
+}
+
+.text {
+    font-size: 12px;
+    font-style: italic;
+    word-wrap: break-word;
+    padding: 5px 10px;
+    border-radius: 5px;
+
+}
+
+.username {
+    color: #0066FF;
+    padding: 5px;
+}
+.message {
+    color: white;
+    border-radius: 5px;
+    margin: 10px;
+    background-color: #660033;
+}
+
+#chats:nth-child(2n) .text{
+    text-align: left;
+}
+#chats:nth-child(2n+1) {
+    text-align: right;
 }
